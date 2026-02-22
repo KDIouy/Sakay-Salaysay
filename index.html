@@ -1,297 +1,217 @@
 <!DOCTYPE html>
-<html lang="tl">
+<html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>ANSHS SakaySalaysay</title>
-
-<!-- React CDN -->
-<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-<!-- Leaflet -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-<style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
-  color: white;
-}
-
-header {
-  padding: 20px;
-  text-align: center;
-  font-size: 24px;
-  font-weight: bold;
-}
-
-nav {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  padding-bottom: 15px;
-}
-
-nav button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 20px;
-  cursor: pointer;
-  background: white;
-  color: #203a43;
-  font-weight: bold;
-  transition: 0.3s;
-}
-
-nav button:hover {
-  transform: scale(1.05);
-}
-
-.container {
-  padding: 20px;
-  max-width: 1000px;
-  margin: auto;
-}
-
-.card {
-  background: white;
-  color: black;
-  padding: 15px;
-  margin-bottom: 15px;
-  border-radius: 15px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-  animation: fadeIn 0.4s ease-in-out;
-}
-
-input, select, textarea {
-  width: 100%;
-  padding: 8px;
-  margin: 5px 0;
-}
-
-textarea {
-  height: 100px;
-}
-
-button.primary {
-  background: #203a43;
-  color: white;
-  padding: 8px 15px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-button.danger {
-  background: red;
-  color: white;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-#map {
-  height: 400px;
-  border-radius: 15px;
-}
-
-@keyframes fadeIn {
-  from {opacity: 0; transform: translateY(10px);}
-  to {opacity: 1; transform: translateY(0);}
-}
-</style>
+  <meta charset="UTF-8">
+  <title>ANSHS SakaySalaysay</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f4f4f4; }
+    .container { max-width:800px; margin:auto; padding:20px; background:white; margin-top:20px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); }
+    input, select, textarea { width:100%; padding:10px; margin:5px 0; border-radius:5px; border:1px solid #ccc; }
+    button { padding:10px 15px; margin-top:10px; border:none; border-radius:5px; background:#007bff; color:white; cursor:pointer; }
+    button:hover { background:#0056b3; }
+    .review { border-bottom:1px solid #ccc; padding:10px 0; }
+    .review h4 { margin:0; }
+    .tabs button { margin-right:5px; }
+    .admin { background:#ffcccc; padding:5px; border-radius:3px; font-size:0.8em; }
+  </style>
 </head>
 <body>
+  <div id="root"></div>
 
-<div id="root"></div>
-
+  <!-- Firebase SDK -->
   <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, deleteDoc, setDoc, getDoc } 
+      from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyDZUUgvFcgetmmRfUlY0-DYrj3PPRWqMpo",
-    authDomain: "sakaysalaysay-9c1d1.firebaseapp.com",
-    projectId: "sakaysalaysay-9c1d1",
-    storageBucket: "sakaysalaysay-9c1d1.firebasestorage.app",
-    messagingSenderId: "118192351425",
-    appId: "1:118192351425:web:19cedc542aeef807098c40"
-  };
+    // Your Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDZUUgvFcgetmmRfUlY0-DYrj3PPRWqMpo",
+      authDomain: "sakaysalaysay-9c1d1.firebaseapp.com",
+      projectId: "sakaysalaysay-9c1d1",
+      storageBucket: "sakaysalaysay-9c1d1.firebasestorage.app",
+      messagingSenderId: "118192351425",
+      appId: "1:118192351425:web:19cedc542aeef807098c40"
+    };
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-</script>
-<script type="text/babel">
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-function App() {
-
-  const [tab, setTab] = React.useState("home");
-  const [reviews, setReviews] = React.useState(
-    JSON.parse(localStorage.getItem("reviews")) || []
-  );
-
-  const [form, setForm] = React.useState({
-    name: "",
-    subject: "",
-    route: "",
-    transit: "Dyip",
-    category: "Sobrang Pamasahe",
-    message: ""
-  });
-
-  React.useEffect(() => {
-    localStorage.setItem("reviews", JSON.stringify(reviews));
-  }, [reviews]);
-
-  React.useEffect(() => {
-    if(tab === "map") initMap();
-  }, [tab]);
-
-  function handleSubmit() {
-    if(!form.name || !form.subject || !form.route || !form.message){
-      alert("Pakipunan lahat ng field.");
-      return;
+    function sha256(ascii) {
+      // simple hash function (synchronous)
+      let hash = 0;
+      for (let i = 0; i < ascii.length; i++) {
+        let char = ascii.charCodeAt(i);
+        hash = ((hash<<5)-hash)+char;
+        hash = hash & hash;
+      }
+      return hash.toString();
     }
-    setReviews([...reviews, form]);
-    setForm({
-      name: "",
-      subject: "",
-      route: "",
-      transit: "Dyip",
-      category: "Sobrang Pamasahe",
-      message: ""
-    });
-    setTab("home");
-  }
 
-  function deleteReview(index){
-    const updated = reviews.filter((_, i) => i !== index);
-    setReviews(updated);
-  }
+    const { useState, useEffect } = React;
 
-  function initMap(){
-    if(window.myMap) return;
+    function App() {
+      const [tab, setTab] = useState("login");
+      const [authForm, setAuthForm] = useState({username:"", password:"", adminKey:""});
+      const [currentUser, setCurrentUser] = useState(null);
+      const [form, setForm] = useState({subject:"", route:"", transit:"Dyip", category:"Sobrang Pamasahe", message:""});
+      const [reviews, setReviews] = useState([]);
 
-    window.myMap = L.map('map').setView([6.128,125.29], 13);
+      // Load reviews in real-time
+      useEffect(() => {
+        const q = query(collection(db, "reviews"), orderBy("timestamp", "desc"));
+        const unsubscribe = onSnapshot(q, snapshot => {
+          const allReviews = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+          setReviews(allReviews);
+        });
+        return () => unsubscribe();
+      }, []);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
-      .addTo(window.myMap);
+      async function register() {
+        if(!authForm.username || !authForm.password){
+          alert("Pakipunan lahat ng field.");
+          return;
+        }
+        const userRef = doc(db, "users", authForm.username);
+        const userSnap = await getDoc(userRef);
+        if(userSnap.exists()){
+          alert("Username already exists");
+          return;
+        }
+        const hashed = sha256(authForm.password);
+        const role = authForm.adminKey==="ANSHS-MOD-2026" ? "admin" : "user";
+        await setDoc(userRef, { password: hashed, role });
+        alert("Registered successfully! Please login.");
+        setAuthForm({username:"", password:"", adminKey:""});
+        setTab("login");
+      }
 
-    // Dyip Route
-    L.polyline([
-      [6.128,125.29],
-      [6.120,125.280],
-      [6.116,125.171]
-    ], {color: 'blue'}).addTo(window.myMap)
-      .bindPopup("Dyip Route: ANSHS - KCC");
+      async function login() {
+        const userRef = doc(db, "users", authForm.username);
+        const userSnap = await getDoc(userRef);
+        if(!userSnap.exists()){
+          alert("User does not exist");
+          return;
+        }
+        const data = userSnap.data();
+        if(data.password === sha256(authForm.password)){
+          setCurrentUser({username: authForm.username, role: data.role});
+          setTab("home");
+        } else {
+          alert("Wrong password");
+        }
+      }
 
-    // Multicab Route
-    L.polyline([
-      [6.128,125.29],
-      [6.110,125.285],
-      [6.100,125.286]
-    ], {color: 'green'}).addTo(window.myMap)
-      .bindPopup("Multicab Route: ANSHS - Alabel Terminal");
+      async function submitReview() {
+        if(!form.subject || !form.route || !form.message){
+          alert("Pakipunan lahat ng field.");
+          return;
+        }
+        try {
+          await addDoc(collection(db, "reviews"), {
+            subject: form.subject,
+            route: form.route,
+            transit: form.transit,
+            category: form.category,
+            message: form.message,
+            user: currentUser.username,
+            timestamp: new Date()
+          });
+          setForm({subject:"", route:"", transit:"Dyip", category:"Sobrang Pamasahe", message:""});
+          setTab("home");
+        } catch(err){
+          alert("Error: "+err.message);
+        }
+      }
 
-    L.marker([6.128,125.29]).addTo(window.myMap)
-      .bindPopup("Alabel National Science High School");
+      async function deleteReview(id, user){
+        if(currentUser.role==="admin" || currentUser.username===user){
+          try {
+            await deleteDoc(doc(db,"reviews",id));
+          } catch(err){
+            alert(err.message);
+          }
+        } else {
+          alert("Hindi mo puwedeng i-delete ito.");
+        }
+      }
 
-    L.marker([6.116,125.171]).addTo(window.myMap)
-      .bindPopup("KCC Terminal - GenSan");
-
-    L.marker([6.100,125.286]).addTo(window.myMap)
-      .bindPopup("Alabel Terminal");
-  }
-
-  return (
-    <div>
-      <header>ANSHS SakaySalaysay</header>
-
-      <nav>
-        <button onClick={()=>setTab("home")}>Home</button>
-        <button onClick={()=>setTab("write")}>Write Review</button>
-        <button onClick={()=>setTab("profile")}>Profile</button>
-        <button onClick={()=>setTab("map")}>Map</button>
-      </nav>
-
-      <div className="container">
-
-        {tab === "home" && (
-          <>
-            <h2>Mga Review</h2>
-            {reviews.map((r,i)=>(
-              <div key={i} className="card">
-                <strong>{r.subject}</strong>
-                <p><small>{r.name} | {r.route} | {r.transit} | {r.category}</small></p>
-                <p>{r.message}</p>
-                <button className="danger" onClick={()=>deleteReview(i)}>Delete</button>
-              </div>
-            ))}
-          </>
-        )}
-
-        {tab === "write" && (
-          <div className="card">
-            <h2>Gumawa ng Review</h2>
-            <input placeholder="Pangalan"
-              value={form.name}
-              onChange={e=>setForm({...form,name:e.target.value})}/>
-            <input placeholder="Subject"
-              value={form.subject}
-              onChange={e=>setForm({...form,subject:e.target.value})}/>
-            <input placeholder="Mula - Papunta"
-              value={form.route}
-              onChange={e=>setForm({...form,route:e.target.value})}/>
-            <select value={form.transit}
-              onChange={e=>setForm({...form,transit:e.target.value})}>
-              <option>Dyip</option>
-              <option>Multicab</option>
-            </select>
-            <select value={form.category}
-              onChange={e=>setForm({...form,category:e.target.value})}>
-              <option>Sobrang Pamasahe</option>
-              <option>Siksikan</option>
-              <option>Nakaharang na Gulong</option>
-              <option>Bilis ng Pagmamaneho</option>
-              <option>Iba pa</option>
-            </select>
-            <textarea placeholder="Ilagay ang karanasan..."
-              value={form.message}
-              onChange={e=>setForm({...form,message:e.target.value})}/>
-            <button className="primary" onClick={handleSubmit}>
-              Send
-            </button>
+      if(!currentUser){
+        return (
+          <div className="container">
+            <h2>{tab==="login" ? "Login" : "Register"}</h2>
+            <input placeholder="Username" value={authForm.username} onChange={e=>setAuthForm({...authForm, username:e.target.value})}/>
+            <input type="password" placeholder="Password" value={authForm.password} onChange={e=>setAuthForm({...authForm, password:e.target.value})}/>
+            {tab==="register" && <input placeholder="Admin Key (optional)" value={authForm.adminKey} onChange={e=>setAuthForm({...authForm, adminKey:e.target.value})}/>}
+            {tab==="login" ?
+              <button onClick={login}>Login</button> :
+              <button onClick={register}>Register</button>
+            }
+            <p style={{marginTop:"10px"}}>
+              {tab==="login" ? 
+                <span>Walang account? <a href="#" onClick={()=>setTab("register")}>Register</a></span> :
+                <span>May account? <a href="#" onClick={()=>setTab("login")}>Login</a></span>
+              }
+            </p>
           </div>
-        )}
+        )
+      }
 
-        {tab === "profile" && (
-          <div className="card">
-            <h2>User Profile</h2>
-            <p><strong>Total Reviews:</strong> {reviews.length}</p>
+      return (
+        <div className="container">
+          <h2>Welcome, {currentUser.username} {currentUser.role==="admin" && <span className="admin">Admin</span>}</h2>
+          <div className="tabs">
+            <button onClick={()=>setTab("home")}>Home</button>
+            <button onClick={()=>setTab("write")}>Write a Review</button>
           </div>
-        )}
 
-        {tab === "map" && (
-          <div id="map"></div>
-        )}
+          {tab==="home" &&
+            <div>
+              <h3>All Reviews</h3>
+              {reviews.length===0 && <p>No reviews yet.</p>}
+              {reviews.map(r => (
+                <div key={r.id} className="review">
+                  <h4>{r.subject} ({r.route} - {r.transit})</h4>
+                  <p>{r.message}</p>
+                  <p><b>By:</b> {r.user} | <b>Category:</b> {r.category}</p>
+                  {(currentUser.role==="admin" || currentUser.username===r.user) &&
+                    <button onClick={()=>deleteReview(r.id, r.user)}>Delete</button>
+                  }
+                </div>
+              ))}
+            </div>
+          }
 
-      </div>
-    </div>
-  );
-}
+          {tab==="write" &&
+            <div>
+              <h3>Write a Review</h3>
+              <input placeholder="Subject" value={form.subject} onChange={e=>setForm({...form, subject:e.target.value})}/>
+              <input placeholder="Route (e.g., Alabel Terminal)" value={form.route} onChange={e=>setForm({...form, route:e.target.value})}/>
+              <select value={form.transit} onChange={e=>setForm({...form, transit:e.target.value})}>
+                <option>Dyip</option>
+                <option>Multicab</option>
+              </select>
+              <select value={form.category} onChange={e=>setForm({...form, category:e.target.value})}>
+                <option>Sobrang Pamasahe</option>
+                <option>Siksikan</option>
+                <option>Nakaharang na Gulong</option>
+                <option>Bilis ng Pagmamaneho</option>
+                <option>Iba Pa</option>
+              </select>
+              <textarea placeholder="Message" value={form.message} onChange={e=>setForm({...form, message:e.target.value})}></textarea>
+              <button onClick={submitReview}>Submit Review</button>
+            </div>
+          }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+          <button style={{background:"#dc3545"}} onClick={()=>{setCurrentUser(null); setTab("login")}}>Logout</button>
+        </div>
+      )
+    }
 
-</script>
-
+    ReactDOM.render(<App />, document.getElementById("root"));
+  </script>
 </body>
-
 </html>
